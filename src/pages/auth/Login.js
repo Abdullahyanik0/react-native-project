@@ -1,21 +1,23 @@
-import { Pressable, Text, View } from "native-base";
+import { Checkbox, Modal, Pressable, Text, View } from "native-base";
 import { useForm, Controller } from "react-hook-form";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import axios from "axios";
-import { Input, Button } from "native-base";
+import { Input, Center } from "native-base";
 import { useState } from "react";
-import { createStackNavigator } from "@react-navigation/stack";
-import { RegisterScreen } from "./Register";
 import CButton from "@components/atoms/CButton";
+import { Keyboard } from "react-native";
 
 export const LoginScreen = ({ navigation }) => {
-  const Stack = createStackNavigator();
   const [show, setShow] = useState(false);
+  const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
-  const url = "https://social-blogs.cyclic.app/register";
+  const [showModal, setShowModal] = useState(false);
+  const url = "https://social-blogs.cyclic.app/login";
+
   const {
     control,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -25,23 +27,26 @@ export const LoginScreen = ({ navigation }) => {
   });
   const onSubmit = (data) => {
     console.log(data);
+    Keyboard.dismiss();
     setLoading(true);
     axios
       .post(url, data)
       .then((response) => {
         console.log(response.data);
+        reset();
         setLoading(false);
+        navigation.navigate("Home");
       })
       .catch(function (error) {
         setLoading(false);
+        setError(error?.message);
         console.log(error?.message);
       });
   };
 
-  const handleClick = () => setShow(!show);
   return (
     <>
-      <View style={{ flex: 1, justifyContent: "flex-start", marginHorizontal: 20, gap: 20 }}>
+      <View style={{ flex: 1, justifyContent: "flex-start", marginHorizontal: 20, gap: 15 }}>
         <View mb="4" mt="12">
           <Text fontSize="3xl">Tekrar Hoşgeldin,</Text>
           <Text color="gray.500" fontSize="lg">
@@ -55,6 +60,11 @@ export const LoginScreen = ({ navigation }) => {
               Zorunlu alan
             </Text>
           )}
+          {error && (
+            <Text mr={2} color="red.500">
+              {error}
+            </Text>
+          )}
         </View>
         <Controller
           control={control}
@@ -62,7 +72,16 @@ export const LoginScreen = ({ navigation }) => {
             required: true,
           }}
           render={({ field: { onChange, onBlur, value } }) => (
-            <Input backgroundColor="white" placeholder="E-mail" w="100%" rounded="xl" onBlur={onBlur} onChangeText={onChange} value={value} />
+            <Input
+              borderColor={errors.password ? "red.600" : "gray.300"}
+              backgroundColor={errors.password ? "red.50" : "white"}
+              placeholder="E-mail"
+              w="100%"
+              rounded="xl"
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+            />
           )}
           name="email"
         />
@@ -83,7 +102,8 @@ export const LoginScreen = ({ navigation }) => {
           }}
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
-              backgroundColor="white"
+              borderColor={errors.password ? "red.600" : "gray.300"}
+              backgroundColor={errors.password ? "red.50" : "white"}
               onBlur={onBlur}
               onChangeText={onChange}
               value={value}
@@ -106,13 +126,32 @@ export const LoginScreen = ({ navigation }) => {
           name="password"
         />
 
-        <View mt={-3} display="flex" flexDirection="row" justifyContent="flex-end">
-          <Text underline color="gray.500">
+        <View display="flex" flexDirection="row" justifyContent="space-between">
+          <Checkbox colorScheme="purple" color="purple.800" value="2" defaultIsChecked>
+            <Text>Beni hatırla.</Text>
+          </Checkbox>
+          <Text onPress={() => setShowModal(true)} underline color="gray.500">
             Parolamı unuttum
           </Text>
         </View>
         <CButton onPress={handleSubmit(onSubmit)} text="Giriş Yap" rounded="full" size="lg" color="purple" loading={loading} />
       </View>
+      {showModal && (
+        <Center>
+          <CButton onPress={handleSubmit(onSubmit)} text="Kayıt Ol" rounded="full" size="lg" color="purple" loading={loading} />
+          <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
+            <Modal.Content minWidth="350px">
+              <Modal.CloseButton />
+              <Modal.Header>Parolanızı mı unuttunuz?</Modal.Header>
+              <Modal.Body display="flex" flexDirection="column" justifyContent="center" gap={4}>
+                <Text>E-posta adresinizi giri</Text>
+                <Input placeholder="Password" w="100%" rounded="xl" />
+                <CButton onPress={handleSubmit(onSubmit)} text="Gönder" rounded="full" size="lg" color="purple" loading={loading} />
+              </Modal.Body>
+            </Modal.Content>
+          </Modal>
+        </Center>
+      )}
     </>
   );
 };

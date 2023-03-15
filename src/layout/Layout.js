@@ -4,8 +4,6 @@ import React from "react";
 const Layout = () => {
   const [selected, setSelected] = React.useState(1);
 
-  const handleNavigate = (item) => {};
-
   return (
     <Box flex={1} bg="white" safeAreaTop width="100%" maxW="300px" alignSelf="center">
       <HStack bg="indigo.600" alignItems="center" safeAreaBottom shadow={6}>
