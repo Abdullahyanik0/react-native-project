@@ -1,20 +1,19 @@
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { Text, View } from "native-base";
+import { Keyboard } from "react-native";
 import { LoginScreen } from "./Login";
 import { RegisterScreen } from "./Register";
 
 export const ProfileScreen = () => {
   const Tab = createMaterialTopTabNavigator();
 
-  const control = true;
-
-  return control ? (
+  return (
     <Tab.Navigator
       initialRouteName="Giriş Yap"
       screenOptions={{
         tabBarStyle: {
           backgroundColor: "#F2F2F3",
-          marginTop: 60,
+          marginTop: 70,
           borderRadius: 10,
           marginHorizontal: 10,
         },
@@ -31,9 +30,5 @@ export const ProfileScreen = () => {
       <Tab.Screen name="Giriş Yap" component={LoginScreen} />
       <Tab.Screen name="Kayıt Ol" component={RegisterScreen} />
     </Tab.Navigator>
-  ) : (
-    <View>
-      <Text>asd</Text>
-    </View>
   );
 };

@@ -1,156 +1,127 @@
-import { Checkbox, Modal, Pressable, Text, View } from "native-base";
-import { useForm, Controller } from "react-hook-form";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { Text, View, Checkbox, Button, Input, Pressable, Icon, FormControl, Box, WarningOutlineIcon, Modal, Center, Actionsheet } from "native-base";
 import axios from "axios";
-import { Input, Center } from "native-base";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CButton from "@components/atoms/CButton";
 import { Keyboard } from "react-native";
+import { useFormik } from "formik";
+import CInput from "@components/atoms/CInput";
+import * as Yup from "yup";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
-export const LoginScreen = ({ navigation }) => {
+export const LoginScreen = ({ route, navigation }) => {
   const [show, setShow] = useState(false);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const url = "https://social-blogs.cyclic.app/login";
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm({
-    defaultValues: {
+  const { handleChange, handleSubmit, handleBlur, values, errors, setFieldValue } = useFormik({
+    initialValues: {
       email: "",
       password: "",
     },
+    validationSchema: Yup.object({
+      email: Yup.string().email("Invalid email address").required("Required"),
+      password: Yup.string().max(20, "Must be 20 characters or less").required("Required"),
+    }),
+    onSubmit: (values) => {
+      Keyboard.dismiss();
+      console.log(values);
+      setLoading(true);
+      axios
+        .post(url, values)
+        .then((response) => {
+          navigation.navigate("Home", { user: values });
+          setLoading(false);
+        })
+        .catch(function (error) {
+          setLoading(false);
+          console.log(error?.message);
+          setError(error?.message);
+        });
+    },
   });
-  const onSubmit = (data) => {
-    console.log(data);
-    Keyboard.dismiss();
-    setLoading(true);
-    axios
-      .post(url, data)
-      .then((response) => {
-        console.log(response.data);
-        reset();
-        setLoading(false);
-        navigation.navigate("Home");
-      })
-      .catch(function (error) {
-        setLoading(false);
-        setError(error?.message);
-        console.log(error?.message);
-      });
-  };
+  const { email, password } = values;
+
+  const userEmail = route?.params?.user?.email;
+  const userPassword = route?.params?.user?.password;
+
+  useEffect(() => {
+    setFieldValue("email", userEmail);
+    setFieldValue("password", userPassword);
+  }, []);
 
   return (
     <>
-      <View style={{ flex: 1, justifyContent: "flex-start", marginHorizontal: 20, gap: 15 }}>
-        <View mb="4" mt="12">
-          <Text fontSize="3xl">Tekrar Hoşgeldin,</Text>
-          <Text color="gray.500" fontSize="lg">
-            Seni tekrar görmek güzel
-          </Text>
-        </View>
-        <View mb="-3" display="flex" flexDirection="row" justifyContent="space-between">
-          <Text>E-posta</Text>
-          {errors.email && (
-            <Text mr={2} color="red.500">
-              Zorunlu alan
+      <KeyboardAwareScrollView keyboardShouldPersistTaps="always">
+        <View style={{ flex: 1, justifyContent: "flex-start", marginHorizontal: 20, gap: 15 }}>
+          <View mb="4" mt="12">
+            <Text fontSize="3xl">Tekrar Hoşgeldin,</Text>
+            <Text color="gray.500" fontSize="lg">
+              Seni tekrar görmek güzel
             </Text>
-          )}
-          {error && (
-            <Text mr={2} color="red.500">
-              {error}
-            </Text>
-          )}
-        </View>
-        <Controller
-          control={control}
-          rules={{
-            required: true,
-          }}
-          render={({ field: { onChange, onBlur, value } }) => (
+          </View>
+          <CInput
+            onBlur={handleBlur("email")}
+            name="email"
+            placeholder="E-posta giriniz."
+            label="E-posta"
+            onChangeText={handleChange("email")}
+            value={email}
+            errors={errors.email}
+          />
+          <FormControl isInvalid={errors.password} w="100%">
+            <Box display="flex" justifyContent="space-between" flexDirection="row">
+              <FormControl.Label>Password</FormControl.Label>
+              {errors.password && <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="sm" />}>{errors.password}</FormControl.ErrorMessage>}
+            </Box>
             <Input
               borderColor={errors.password ? "red.600" : "gray.300"}
               backgroundColor={errors.password ? "red.50" : "white"}
-              placeholder="E-mail"
-              w="100%"
-              rounded="xl"
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-            />
-          )}
-          name="email"
-        />
-
-        <View mb="-3" display="flex" flexDirection="row" justifyContent="space-between">
-          <Text>Şifre</Text>
-          {errors.password && (
-            <Text mr={2} color="red.500">
-              Zorunlu alan
-            </Text>
-          )}
-        </View>
-
-        <Controller
-          control={control}
-          rules={{
-            required: true,
-          }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Input
-              borderColor={errors.password ? "red.600" : "gray.300"}
-              backgroundColor={errors.password ? "red.50" : "white"}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
+              rounded="lg"
+              onChangeText={handleChange("password")}
+              value={password}
               type={show ? "text" : "password"}
-              rounded="xl"
               w="100%"
               py="2"
-              control={control}
-              rules={{
-                required: true,
-              }}
               InputRightElement={
                 <Pressable pr="2" onPress={() => setShow(!show)}>
                   <Icon name={show ? "eye-off" : "eye"} size={25} />
                 </Pressable>
               }
-              placeholder="Password"
+              placeholder="Şifre"
             />
-          )}
-          name="password"
-        />
+          </FormControl>
 
-        <View display="flex" flexDirection="row" justifyContent="space-between">
-          <Checkbox colorScheme="purple" color="purple.800" value="2" defaultIsChecked>
-            <Text>Beni hatırla.</Text>
-          </Checkbox>
-          <Text onPress={() => setShowModal(true)} underline color="gray.500">
-            Parolamı unuttum
-          </Text>
+          <View display="flex" flexDirection="row" justifyContent="space-between">
+            <Checkbox colorScheme="purple" color="purple.800" value="2" defaultIsChecked>
+              <Text>Beni hatırla.</Text>
+            </Checkbox>
+            <Text onPress={() => setShowModal(true)} underline color="gray.500">
+              Parolamı unuttum
+            </Text>
+          </View>
+          <CButton onPress={handleSubmit} text="Giriş Yap" rounded="full" size="lg" color="purple" loading={loading} />
         </View>
-        <CButton onPress={handleSubmit(onSubmit)} text="Giriş Yap" rounded="full" size="lg" color="purple" loading={loading} />
-      </View>
+      </KeyboardAwareScrollView>
       {showModal && (
-        <Center>
-          <CButton onPress={handleSubmit(onSubmit)} text="Kayıt Ol" rounded="full" size="lg" color="purple" loading={loading} />
-          <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
-            <Modal.Content minWidth="350px">
-              <Modal.CloseButton />
-              <Modal.Header>Parolanızı mı unuttunuz?</Modal.Header>
-              <Modal.Body display="flex" flexDirection="column" justifyContent="center" gap={4}>
-                <Text>E-posta adresinizi giri</Text>
-                <Input placeholder="Password" w="100%" rounded="xl" />
-                <CButton onPress={handleSubmit(onSubmit)} text="Gönder" rounded="full" size="lg" color="purple" loading={loading} />
-              </Modal.Body>
-            </Modal.Content>
-          </Modal>
-        </Center>
+        <Actionsheet isOpen={showModal} onClose={setShowModal}>
+          <Actionsheet.Content>
+            <View width="100%">
+              <Text textAlign="center" fontSize={16}>
+                Parolanızı mı unuttunuz?
+              </Text>
+            </View>
+          </Actionsheet.Content>
+          <Actionsheet.Item>
+            <View width="100%" minW="100%" mb={4}>
+              <Text m={2}>E-posta adresinizi girin</Text>
+              <Input mb={8} placeholder="Password" w="100%" rounded="xl" />
+              <CButton onPress={handleSubmit} text="Gönder" rounded="full" size="lg" color="purple" loading={loading} />
+            </View>
+          </Actionsheet.Item>
+          <Actionsheet.Item></Actionsheet.Item>
+        </Actionsheet>
       )}
     </>
   );
