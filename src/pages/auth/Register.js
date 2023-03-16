@@ -1,145 +1,83 @@
-import { useForm, Controller } from "react-hook-form";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import axios from "axios";
-import { Input, Text, View, Pressable, Center, Modal, FormControl, Checkbox } from "native-base";
+import { Text, View, Checkbox, Button, Input, Pressable, Icon, FormControl, Box, WarningOutlineIcon } from "native-base";
 import { useState } from "react";
 import CButton from "@components/atoms/CButton";
-import { Keyboard, RefreshControl } from "react-native";
+import { useFormik } from "formik";
+import CInput from "@components/atoms/CInput";
+import * as Yup from "yup";
+import { Keyboard } from "react-native";
+import axios from "axios";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+
+const url = "https://social-blogs.cyclic.app/register";
 
 export const RegisterScreen = ({ navigation }) => {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-  const [groupValues, setGroupValues] = useState([]);
 
-  const url = "https://social-blogs.cyclic.app/register";
-
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm({
-    defaultValues: {
+  const { handleChange, handleSubmit, handleBlur, values, errors, resetForm } = useFormik({
+    initialValues: {
       name: "",
       email: "",
       password: "",
     },
+    validationSchema: Yup.object({
+      name: Yup.string().max(15, "Must be 15 characters or less").required("Required"),
+      email: Yup.string().email("Invalid email address").required("Required"),
+      password: Yup.string().max(20, "Must be 20 characters or less").required("Required"),
+    }),
+    onSubmit: (values) => {
+      Keyboard.dismiss();
+      console.log(values);
+      setLoading(true);
+      axios
+        .post(url, values)
+        .then((response) => {
+          console.log(response.data);
+          navigation.navigate("Login", { user: values });
+          setLoading(false);
+          resetForm();
+        })
+        .catch(function (error) {
+          setLoading(false);
+          console.log(error?.message);
+          setError(error?.message);
+        });
+    },
   });
-  const onSubmit = (data) => {
-    Keyboard.dismiss();
-    console.log(data);
-    setLoading(true);
-    axios
-      .post(url, data)
-      .then((response) => {
-        console.log(response.data);
-        navigation.navigate("Login");
-        setLoading(false);
-      })
-      .catch(function (error) {
-        setLoading(false);
-        console.log(error?.message);
-        setError(error?.message);
-      });
-    reset();
-  };
-
+  const { name, email, password } = values;
   return (
-    <View style={{ flex: 1, justifyContent: "flex-start", marginHorizontal: 20, gap: 15 }}>
-      <View mb="4" mt="12">
-        <Text fontSize="3xl">Tekrar Hoşgeldin,</Text>
-        <Text color="gray.500" fontSize="lg">
-          Seni tekrar görmek güzel
-        </Text>
-      </View>
-      <View mb="-3" display="flex" flexDirection="row" justifyContent="space-between">
-        <Text>Adınız</Text>
-        {errors.name && (
-          <Text mr={2} color="red.500">
-            Zorunlu alan
+    <KeyboardAwareScrollView keyboardShouldPersistTaps="always">
+      <View style={{ flex: 1, justifyContent: "flex-start", marginHorizontal: 20, gap: 15 }} mb={4}>
+        <View mb="4" mt="12">
+          <Text fontSize="3xl">Tekrar Hoşgeldin,</Text>
+          <Text color="gray.500" fontSize="lg">
+            Seni tekrar görmek güzel
           </Text>
-        )}
-        {error && (
-          <Text mr={2} color="red.500">
-            {error}
-          </Text>
-        )}
-      </View>
-      <Controller
-        control={control}
-        rules={{
-          required: true,
-        }}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <Input
-            borderColor={errors.name ? "red.600" : "gray.300"}
-            backgroundColor={errors.name ? "red.50" : "white"}
-            rounded="lg"
-            placeholder="Adınız"
-            w="100%"
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-          />
-        )}
-        name="name"
-      />
-      <View mb="-3" display="flex" flexDirection="row" justifyContent="space-between">
-        <Text>E-mail</Text>
-        {errors.email && (
-          <Text mr={2} color="red.500">
-            Zorunlu alan
-          </Text>
-        )}
-      </View>
-      <Controller
-        control={control}
-        rules={{
-          required: true,
-        }}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <Input
-            borderColor={errors.email ? "red.600" : "gray.300"}
-            backgroundColor={errors.email ? "red.50" : "white"}
-            rounded="lg"
-            placeholder="E-mail"
-            w="100%"
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-          />
-        )}
-        name="email"
-      />
-      <View mb="-3" display="flex" flexDirection="row" justifyContent="space-between">
-        <Text>Şifre</Text>
-        {errors.password && (
-          <Text mr={2} color="red.500">
-            Zorunlu alan
-          </Text>
-        )}
-      </View>
-      <Controller
-        control={control}
-        rules={{
-          required: true,
-        }}
-        render={({ field: { onChange, onBlur, value } }) => (
+        </View>
+        <View mb={-10} mr={2} display="flex" flexDirection="row" justifyContent="flex-end">
+          {error === "Request failed with status code 417" ? (
+            <Text color="red.600">{!errors.name && "Kullanıcı Zaten Kayıtlı."}</Text>
+          ) : (
+            <Text color="red.600">{!errors.name && error}</Text>
+          )}
+        </View>
+        <CInput name="name" placeholder="İsim giriniz." label="İsim" onChangeText={handleChange("name")} value={name} errors={errors.name} />
+        <CInput name="email" placeholder="E-posta giriniz." label="E-posta" onChangeText={handleChange("email")} value={email} errors={errors.email} />
+        <FormControl isInvalid={errors.password} w="100%">
+          <Box display="flex" justifyContent="space-between" flexDirection="row">
+            <FormControl.Label>Password</FormControl.Label>
+            {errors.password && <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="sm" />}>{errors.password}</FormControl.ErrorMessage>}
+          </Box>
           <Input
             borderColor={errors.password ? "red.600" : "gray.300"}
             backgroundColor={errors.password ? "red.50" : "white"}
             rounded="lg"
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
+            onChangeText={handleChange("password")}
+            value={password}
             type={show ? "text" : "password"}
             w="100%"
             py="2"
-            control={control}
-            rules={{
-              required: true,
-            }}
             InputRightElement={
               <Pressable pr="2" onPress={() => setShow(!show)}>
                 <Icon name={show ? "eye-off" : "eye"} size={25} />
@@ -147,19 +85,19 @@ export const RegisterScreen = ({ navigation }) => {
             }
             placeholder="Şifre"
           />
-        )}
-        name="password"
-      />
-      <Checkbox colorScheme="purple" value="1" defaultIsChecked>
-        <Text color="purple.800">Şartlar ve koşulları</Text>
-        <Text>kabul ediyorum.</Text>
-      </Checkbox>
-      <Checkbox colorScheme="purple" value="2" defaultIsChecked>
-        <Text color="purple.800">Ticari Şartları</Text>
-        <Text>kabul ediyorum.</Text>
-      </Checkbox>
+        </FormControl>
 
-      <CButton onPress={handleSubmit(onSubmit)} text="Kayıt Ol" rounded="full" size="lg" color="purple" loading={loading} />
-    </View>
+        <Checkbox colorScheme="purple" value="1" defaultIsChecked>
+          <Text color="purple.800">Şartlar ve koşulları</Text>
+          <Text>kabul ediyorum.</Text>
+        </Checkbox>
+        <Checkbox colorScheme="purple" value="2" defaultIsChecked>
+          <Text color="purple.800">Ticari Şartları</Text>
+          <Text>kabul ediyorum.</Text>
+        </Checkbox>
+
+        <CButton onPress={handleSubmit} text="Kayıt Ol" rounded="full" size="lg" color="purple" loading={loading} />
+      </View>
+    </KeyboardAwareScrollView>
   );
 };
