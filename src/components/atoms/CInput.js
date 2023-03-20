@@ -1,20 +1,20 @@
 import { Box, FormControl, Input, WarningOutlineIcon } from "native-base";
 import React from "react";
 
-const CInput = ({ placeholder, name, label, value, errors, onChangeText, onBlur }) => {
+const CInput = ({ placeholder, name, label, value, errors, onChangeText, onBlur, touched }) => {
   return (
     <Box alignItems="center">
-      <FormControl isInvalid  w="100%">
+      <FormControl isInvalid={errors && touched} w="100%">
         <Box display="flex" justifyContent="space-between" flexDirection="row">
           <FormControl.Label>{label}</FormControl.Label>
-          <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="sm" />}>{errors}</FormControl.ErrorMessage>
+          {errors && <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="sm" />}>{touched && errors}</FormControl.ErrorMessage>}
         </Box>
         <Input
           onBlur={onBlur}
           onChangeText={onChangeText}
           rounded="xl"
-          borderColor={errors ? "red.600" : "gray.300"}
-          backgroundColor={errors ? "red.50" : "white"}
+          borderColor={errors && touched ? "red.600" : "gray.300"}
+          backgroundColor={errors && touched ? "red.50" : "white"}
           name={name}
           value={value}
           placeholder={placeholder}
@@ -25,4 +25,3 @@ const CInput = ({ placeholder, name, label, value, errors, onChangeText, onBlur 
 };
 
 export default CInput;
-p

@@ -34,7 +34,7 @@ export const RegisterScreen = ({ navigation }) => {
         .post(url, values)
         .then((response) => {
           console.log(response.data);
-          navigation.navigate("Login", { user: values });
+      /*     navigation.navigate("Login", { user: values }); */
           setLoading(false);
           resetForm();
         })
@@ -97,6 +97,12 @@ export const RegisterScreen = ({ navigation }) => {
         </Checkbox>
 
         <CButton onPress={handleSubmit} text="Kayıt Ol" rounded="full" size="lg" color="purple" loading={loading} />
+        <View display="flex" flexDirection="row" gap="2">
+          <Text>Hesabın var mı ?</Text>
+          <Text  color="purple.600">
+            Giriş Yap
+          </Text>
+        </View>
       </View>
     </KeyboardAwareScrollView>
   );

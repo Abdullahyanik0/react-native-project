@@ -10,7 +10,7 @@ export const Routes = () => {
   return (
     <Stack.Navigator
       screenOptions={({ route }) => ({
-        headerShown: route.name === "ProfileScreen" ? false : true,
+        headerShown: route.name === "Login" || route.name === "Register" ? false : true,
       })}
       initialRouteName="Home"
     >
@@ -18,7 +18,7 @@ export const Routes = () => {
       <Stack.Screen name="Detail" component={DetailScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
-      <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+      <Stack.Screen name="Profile" component={ProfileScreen} />
     </Stack.Navigator>
   );
 };

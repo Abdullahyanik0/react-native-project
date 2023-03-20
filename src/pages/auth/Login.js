@@ -9,13 +9,14 @@ import * as Yup from "yup";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 export const LoginScreen = ({ route, navigation }) => {
+  console.log(navigation);
   const [show, setShow] = useState(false);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const url = "https://social-blogs.cyclic.app/login";
 
-  const { handleChange, handleSubmit, handleBlur, values, errors, setFieldValue } = useFormik({
+  const { handleChange, handleSubmit, handleBlur, values, errors, setFieldValue, touched } = useFormik({
     initialValues: {
       email: "",
       password: "",
@@ -62,6 +63,7 @@ export const LoginScreen = ({ route, navigation }) => {
             </Text>
           </View>
           <CInput
+            touched={touched.email}
             onBlur={handleBlur("email")}
             name="email"
             placeholder="E-posta giriniz."
@@ -70,14 +72,14 @@ export const LoginScreen = ({ route, navigation }) => {
             value={email}
             errors={errors.email}
           />
-          <FormControl isInvalid={errors.password} w="100%">
+          <FormControl isInvalid={errors.password && touched.password} w="100%">
             <Box display="flex" justifyContent="space-between" flexDirection="row">
               <FormControl.Label>Password</FormControl.Label>
-              {errors.password && <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="sm" />}>{errors.password}</FormControl.ErrorMessage>}
+              {errors.password && touched.password && <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="sm" />}>{errors.password}</FormControl.ErrorMessage>}
             </Box>
             <Input
-              borderColor={errors.password ? "red.600" : "gray.300"}
-              backgroundColor={errors.password ? "red.50" : "white"}
+              borderColor={errors.password && touched.password ? "red.600" : "gray.300"}
+              backgroundColor={errors.password && touched.password ? "red.50" : "white"}
               rounded="lg"
               onChangeText={handleChange("password")}
               value={password}
@@ -102,6 +104,12 @@ export const LoginScreen = ({ route, navigation }) => {
             </Text>
           </View>
           <CButton onPress={handleSubmit} text="Giriş Yap" rounded="full" size="lg" color="purple" loading={loading} />
+          <View display="flex" flexDirection="row" gap="2">
+            <Text>Hesabın yok mu ?</Text>
+            <Text onPress={() => navigation.navigate("Register")} color="purple.600">
+              Kaydol
+            </Text>
+          </View>
         </View>
       </KeyboardAwareScrollView>
       {showModal && (

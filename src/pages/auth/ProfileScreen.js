@@ -1,34 +1,22 @@
-import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import React, { useState } from "react";
 import { Text, View } from "native-base";
-import { Keyboard } from "react-native";
+import CButton from "@components/atoms/CButton";
 import { LoginScreen } from "./Login";
 import { RegisterScreen } from "./Register";
+import { useNavigation } from "@react-navigation/native";
 
 export const ProfileScreen = () => {
-  const Tab = createMaterialTopTabNavigator();
-
+  const [tabs, setTabs] = useState("Login");
+  const handleTabs = (tab) => {
+    setTabs(tab);
+  };
   return (
-    <Tab.Navigator
-      initialRouteName="Giriş Yap"
-      screenOptions={{
-        tabBarStyle: {
-          backgroundColor: "#F2F2F3",
-          marginTop: 70,
-          borderRadius: 10,
-          marginHorizontal: 10,
-        },
-        tabBarLabelStyle: { fontSize: 15, fontWeight: 500 },
-        tabBarActiveTintColor: "black",
-        tabBarInactiveTintColor: "#BDCDD6",
-        tabBarIndicatorStyle: {
-          backgroundColor: "transparent",
-        },
-        tabBarItemStyle: { backgroundColor: "white", margin: 5, borderRadius: 12 },
-        tabBarPressColor: "transparent",
-      }}
-    >
-      <Tab.Screen name="Giriş Yap" component={LoginScreen} />
-      <Tab.Screen name="Kayıt Ol" component={RegisterScreen} />
-    </Tab.Navigator>
+    <View display="flex" flexDirection="column" alignItems="center">
+      <View backgroundColor="white" w="50%" display="flex" flexDirection="row" justifyContent="space-between">
+        <CButton color="red" text="Login" flex={1} onPress={() => handleTabs("Login")} />
+        <CButton color="red" text="Register" flex={1} onPress={() => handleTabs("Register")} />
+      </View>
+      {tabs === "Login" ? <LoginScreen /> : tabs === "Register" ? <RegisterScreen /> : ""}
+    </View>
   );
 };

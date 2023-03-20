@@ -39,9 +39,9 @@ export const Footer = () => {
             </Text>
           </Center>
         </Pressable>
-        <Pressable cursor="pointer" opacity={selected === "ProfileScreen" ? 1 : 0.5} py="1" flex={1} onPress={() => handleNavigate("ProfileScreen")}>
+        <Pressable cursor="pointer" opacity={selected === "Login" || selected === "Register" ? 1 : 0.5} py="1" flex={1} onPress={() => handleNavigate("Profile")}>
           <Center>
-            <Icon as={<MaterialCommunityIcons name={selected === "ProfileScreen" ? "account" : "account-outline"} />} color="black" size="lg" />
+            <Icon as={<MaterialCommunityIcons name={selected === "Login" || selected === "Register" ? "account" : "account-outline"} />} color="black" size="lg" />
             <Text color="black" fontSize="11">
               Profile
             </Text>
